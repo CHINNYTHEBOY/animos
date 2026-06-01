@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>animos - Interactive Custom Player</title>
+
+  <style>
+    body { 
+      margin: 0; 
+      font-family: Arial, sans-serif; 
+      background: #0f172a; 
+      color: white; 
+      user-select: none;
+    } 
+
+    /* TOP BAR */ 
+    .topbar { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 12px 20px; 
+      background: #111827; 
+    } 
+    .logo { 
+      font-size: 24px; 
+      font-weight: bold; 
+      color: #ffffff; 
+    } 
+    .search-container {
+      display: flex;
+      gap: 8px;
+    }
+    .search { 
+      padding: 6px 12px; 
+      border-radius: 6px; 
+      border: none; 
+      outline: none; 
+      background: #e2e8f0;
+      color: #1e293b;
+      max-width: 140px;
+    } 
+    .search-btn {
+      background: #ef4444;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* RESPONSIVE LAYOUT CONTAINER */ 
+    .container { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 24px; 
+      padding: 16px; 
+    } 
+
+    /* VIDEO SECTION */ 
+    .video-section { 
+      width: 100%;
+    } 
+    
+    .player-box { 
+      width: 100%; 
+      aspect-ratio: 16/9; 
+      background: black; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      position: relative; 
+    } 
+
+    .iframe-wrapper {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* INTERACTIVE CUSTOM OVERLAY */
+    .player-ui-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(15, 23, 42, 0.95));
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
+
+    .custom-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      width: 0%; /* Synced live via JS */
+      height: 100%;
+      background: #ef4444; 
+      border-radius: 4px;
+      transition: width 0.1s linear;
+    }
+
+    .custom-controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .left-controls, .right-controls {
+      display: flex;
+      gap: 15px;
+      font-size: 13px;
+      align-items: center;
+    }
+
+    .control-icon {
+      cursor: pointer;
+      opacity: 0.8;
+      transition: 0.2s;
+    }
+    .control-icon:hover {
+      opacity: 1;
+      color: #ef4444;
+    }
+
+    /* TITLE & TAGS */ 
+    .title { 
+      margin-top: 16px; 
+      font-size: 18px; 
+      font-weight: bold;
+    } 
+    .tags { 
+      margin-top: 10px; 
+    } 
+    .tag { 
+      display: inline-block; 
+      padding: 4px 10px; 
+      background: #064e3b; 
+      color: #10b981;
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-weight: bold;
+      margin-right: 6px; 
+    } 
+    .tag.secondary {
+      background: #374151;
+      color: #9ca3af;
+    }
+
+    /* DEBUG CONSOLE */
+    .console-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .debug-title {
+      color: #94a3b8;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .copy-btn {
+      background: #334155;
+      color: #f1f5f9;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background: #ef4444;
+    }
+
+    .debug-console {
+      margin-top: 6px;
+      background: #000000;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      color: #34d399; 
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* EPISODES SIDEBAR */ 
+    .episodes { 
+      background: #111827; 
+      padding: 16px; 
+      border-radius: 12px; 
+      height: fit-content; 
+    } 
+    .episodes h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+    .ep-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ep { 
+      padding: 12px; 
+      background: #1f2937; 
+      border: 1px solid #374151;
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: 0.2s ease; 
+      font-size: 13px;
+    } 
+    .ep:hover { 
+      background: #2d3748; 
+    } 
+    .ep.active { 
+      border: 1px solid #ef4444; 
+      background: #1f2937;
+    } 
+
+    /* DESKTOP RESPONSIVE DESIGN */
+    @media (min-width: 768px) {
+      .container { flex-direction: row; padding: 40px; gap: 40px; }
+      .topbar { padding: 12px 40px; }
+      .search { max-width: none; }
+      .video-section { flex: 2; }
+      .episodes { flex: 1; max-width: 360px; padding: 24px; }
+      .title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">animos</div>
+    <div class="search-container">
+      <input type="text" class="search" placeholder="Search">
+      <button class="search-btn">🔍</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="video-section">
+      <div class="player-box" id="playerBox">
+        
+        <div class="iframe-wrapper">
+          <iframe 
+            id="player" 
+            src="" 
+            allowfullscreen 
+            allow="autoplay; fullscreen">
+          </iframe>
+        </div>
+
+        <div class="player-ui-overlay" id="customControls">
+          <div class="custom-progress-bar" id="progressBar" onclick="seekVideo(event)">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="custom-controls-row">
+            <div class="left-controls">
+              <span class="control-icon" id="playBtn" onclick="togglePlay()">▶</span>
+              <span class="control-icon" onclick="nextEpisode()">÷</span>
+              <span id="timeDisplay">00:00 / 00:00</span>
+            </div>
+            <div class="right-controls">
+              <span class="control-icon" onclick="toggleMute()" id="volumeBtn">🔊</span>
+              <span class="control-icon" onclick="toggleFullscreen()">⛶</span>
+            </div>
+          </div>
+        </div>
+
+      </div> 
+      
+      <div class="title" id="title">1. Project Apple</div> 
+      <div class="tags"> 
+        <span class="tag">GOGO</span> 
+        <span class="tag secondary">GOGO-BK</span> 
+      </div>
+
+      <div class="console-header-row">
+        <div class="debug-title">System Status Log</div>
+        <button class="copy-btn" onclick="copyConsoleLogs()">Copy Logs</button>
+      </div>
+      <div class="debug-console" id="consoleOut">Initializing application layout... Done.</div>
+    </div> 
+
+    <div class="episodes"> 
+      <h3>Episodes</h3>
+      <div class="ep-list">
+        <div class="ep active" data-ep="1" onclick="loadEp(this, '1')">1. Project Apple</div> 
+        <div class="ep" data-ep="2" onclick="loadEp(this, '2')">2. Disarm the Time Bomb</div> 
+        <div class="ep" data-ep="3" onclick="loadEp(this, '3')">3. A New Family Member</div> 
+        <div class="ep" data-ep="4" onclick="loadEp(this, '4')">4. Yors Kitchen / The Informants Great Romance Plan</div> 
+        <div class="ep" data-ep="5" onclick="loadEp(this, '5')">5. Carry Out the Griffin Plan / Fullmetal Lady / Omelet Rice ♡</div> 
+        <div class="ep" data-ep="6" onclick="loadEp(this, '6')">6. Uncle the Private Tutor / Daybreak</div> 
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const playerBaseUrl = "https://dropfile.cc/player/tv/tt0388629/1/";
+    let isPlaying = false;
+    let isMuted = false;
+
+    function logToScreen(message) {
+      const consoleElem = document.getElementById("consoleOut");
+      const timestamp = new Date().toLocaleTimeString();
+      consoleElem.innerHTML += `\n[${timestamp}] ${message}`;
+      consoleElem.scrollTop = consoleElem.scrollHeight; 
+    }
+
+    function copyConsoleLogs() {
+      navigator.clipboard.writeText(document.getElementById("consoleOut").innerText).then(() => alert("Logs copied!"));
+    }
+
+    function loadEp(el, ep) { 
+      document.querySelectorAll(".ep").forEach(e => e.classList.remove("active")); 
+      el.classList.add("active"); 
+      document.getElementById("title").innerText = el.innerText; 
+
+      const targetPlayerUrl = `${playerBaseUrl}${ep}?audio=sub&lang=en`;
+      document.getElementById("player").src = targetPlayerUrl;
+      logToScreen(`Syncing local interface wrapper to layout frame.`);
+    }
+
+    // INTERACTIVE CONTROLS EMULATION LAYER
+    function togglePlay() {
+      const iframe = document.getElementById("player").contentWindow;
+      isPlaying = !isPlaying;
+      document.getElementById("playBtn").innerText = isPlaying ? "⏸" : "▶";
+      
+      // Sending data messages inside the frame window object smoothly
+      iframe.postMessage(JSON.stringify({ method: isPlaying ? 'play' : 'pause' }), '*');
+      logToScreen(`Playback state toggled: ${isPlaying ? 'Playing' : 'Paused'}`);
+    }
+
+    function toggleMute() {
+      const iframe = document.getElementById("player").contentWindow;
+      isMuted = !isMuted;
+      document.getElementById("volumeBtn").innerText = isMuted ? "🔇" : "🔊";
+      iframe.postMessage(JSON.stringify({ method: 'setVolume', value: isMuted ? 0 : 1 }), '*');
+    }
+
+    function seekVideo(event) {
+      const progressBar = document.getElementById("progressBar");
+      const rect = progressBar.getBoundingClientRect();
+      const clickPositionPercentage = (event.clientX - rect.left) / rect.width;
+      
+      document.getElementById("progressFill").style.width = `${clickPositionPercentage * 100}%`;
+      logToScreen(`Seeking mock timestamp location to: ${Math.round(clickPositionPercentage * 100)}%`);
+    }
+
+    function toggleFullscreen() {
+      const box = document.getElementById("playerBox");
+      if (!document.fullscreenElement) {
+        box.requestFullscreen().catch(err => alert("Error enabling fullscreen profile mode."));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function nextEpisode() {
+      const currentActive = document.querySelector(".ep.active");
+      const nextActive = currentActive.nextElementSibling;
+      if (nextActive) {
+        loadEp(nextActive, nextActive.getAttribute("data-ep"));
+      }
+    }
+
+    // Listening for active playback tracker pulses sent from inside the stream frame
+    window.addEventListener('message', function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === 'timeupdate') {
+          const progressPercent = (data.value.currentTime / data.value.duration) * 100;
+          document.getElementById("progressFill").style.width = `${progressPercent}%`;
+          
+          // Format standard display clock strings 
+          const curMin = Math.floor(data.value.currentTime / 60).toString().padStart(2, '0');
+          const curSec = Math.floor(data.value.currentTime % 60).toString().padStart(2, '0');
+          const durMin = Math.floor(data.value.duration / 60).toString().padStart(2, '0');
+          const durSec = Math.floor(data.value.duration % 60).toString().padStart(2, '0');
+          
+          document.getElementById("timeDisplay").innerText = `${curMin}:${curSec} / ${durMin}:${durSec}`;
+        }
+      } catch(e) {}
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadEp(document.querySelector('.ep.active'), '1');
+    });
+  </script>
+</body>
+</html>
