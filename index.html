@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>animos - Premium Red Player</title>
+  
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
+  <style>
+    /* THEME STYLING - Pure custom red accent controls */
+    :root {
+      --plyr-color-main: #ef4444; 
+      --plyr-video-control-background-hover: rgba(239, 68, 68, 0.2);
+    }
+
+    body { 
+      margin: 0; 
+      font-family: Arial, sans-serif; 
+      background: #0f172a; 
+      color: white; 
+    } 
+
+    /* TOP BAR */ 
+    .topbar { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 12px 20px; 
+      background: #111827; 
+    } 
+    .logo { 
+      font-size: 24px; 
+      font-weight: bold; 
+      color: #ffffff; 
+    } 
+    .search-container {
+      display: flex;
+      gap: 8px;
+    }
+    .search { 
+      padding: 6px 12px; 
+      border-radius: 6px; 
+      border: none; 
+      outline: none; 
+      background: #e2e8f0;
+      color: #1e293b;
+      max-width: 140px;
+    } 
+    .search-btn {
+      background: #ef4444;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* RESPONSIVE LAYOUT */ 
+    .container { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 24px; 
+      padding: 16px; 
+    } 
+
+    /* VIDEO SECTION */ 
+    .video-section { 
+      width: 100%;
+    } 
+    
+    .player-box { 
+      width: 100%; 
+      aspect-ratio: 16/9; 
+      background: black; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    } 
+
+    .plyr {
+      height: 100%;
+      width: 100%;
+    }
+
+    /* TITLE & TAGS */ 
+    .title { 
+      margin-top: 16px; 
+      font-size: 18px; 
+      font-weight: bold;
+    } 
+    .tags { 
+      margin-top: 10px; 
+    } 
+    .tag { 
+      display: inline-block; 
+      padding: 4px 10px; 
+      background: #064e3b; 
+      color: #10b981;
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-weight: bold;
+      margin-right: 6px; 
+    } 
+    .tag.secondary {
+      background: #374151;
+      color: #9ca3af;
+    }
+
+    /* EPISODES SIDEBAR */ 
+    .episodes { 
+      background: #111827; 
+      padding: 16px; 
+      border-radius: 12px; 
+      height: fit-content; 
+    } 
+    .episodes h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+    .ep-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ep { 
+      padding: 12px; 
+      background: #1f2937; 
+      border: 1px solid #374151;
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: 0.2s ease; 
+      font-size: 13px;
+    } 
+    .ep:hover { 
+      background: #2d3748; 
+    } 
+    .ep.active { 
+      border: 1px solid #ef4444; 
+      background: #1f2937;
+    } 
+
+    @media (min-width: 768px) {
+      .container { flex-direction: row; padding: 40px; gap: 40px; }
+      .topbar { padding: 12px 40px; }
+      .search { max-width: none; }
+      .video-section { flex: 2; }
+      .episodes { flex: 1; max-width: 360px; padding: 24px; }
+      .title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">animos</div>
+    <div class="search-container">
+      <input type="text" class="search" placeholder="Search">
+      <button class="search-btn">🔍</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="video-section">
+      <div class="player-box" id="playerContainer">
+        <video id="player" playsinline controls preload="auto">
+          <source src="" type="application/x-mpegURL" />
+        </video>
+      </div> 
+      
+      <div class="title" id="title">1. Project Apple</div> 
+      <div class="tags"> 
+        <span class="tag">GOGO</span> 
+        <span class="tag secondary">GOGO-BK</span> 
+      </div>
+    </div> 
+
+    <div class="episodes"> 
+      <h3>Episodes</h3>
+      <div class="ep-list">
+        <div class="ep active" onclick="loadEp(this, '1')">1. Project Apple</div> 
+        <div class="ep" onclick="loadEp(this, '2')">2. Disarm the Time Bomb</div> 
+        <div class="ep" onclick="loadEp(this, '3')">3. A New Family Member</div> 
+        <div class="ep" onclick="loadEp(this, '4')">4. Yors Kitchen / The Informants Great Romance Plan</div> 
+        <div class="ep" onclick="loadEp(this, '5')">5. Carry Out the Griffin Plan / Fullmetal Lady / Omelet Rice ♡</div> 
+        <div class="ep" onclick="loadEp(this, '6')">6. Uncle the Private Tutor / Daybreak</div> 
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  
+  <script>
+    const apiKey = "df_ac690526401bd197770ec86c283e55af";
+    let playerInstance = null;
+    let hlsInstance = null;
+
+    // Initialize clean Plyr setup
+    function initPlayer() {
+      playerInstance = new Plyr('#player', {
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
+      });
+    }
+
+    async function loadEp(el, ep) { 
+      document.querySelectorAll(".ep").forEach(e => e.classList.remove("active")); 
+      el.classList.add("active"); 
+      document.getElementById("title").innerText = el.innerText; 
+
+      // Fallback clean element reset to wipe out any broken iframes
+      const container = document.getElementById("playerContainer");
+      container.innerHTML = `<video id="player" playsinline controls preload="auto"><source src="" type="application/x-mpegURL" /></video>`;
+      initPlayer();
+
+      const targetApiUrl = `https://dropfile.cc/api/anime/embed/tv/tt0388629/1/${ep}?audio=sub&lang=en`;
+      
+      try {
+        const response = await fetch(targetApiUrl, {
+          method: 'GET',
+          headers: {
+            'X-API-Key': apiKey,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+
+        if (data?.stream?.proxied_sources?.[0]?.url) {
+          const m3u8StreamUrl = data.stream.proxied_sources[0].url;
+          const videoElement = document.getElementById("player");
+
+          if (hlsInstance) hlsInstance.destroy();
+
+          if (Hls.isSupported()) {
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(m3u8StreamUrl);
+            hlsInstance.attachMedia(videoElement);
+          } else if (videoElement.canPlayType('application/x-mpegURL')) {
+            videoElement.src = m3u8StreamUrl;
+          }
+          playerInstance.play();
+        } else {
+          throw new Error();
+        }
+      } catch (error) {
+        // If their API throws a 401 domain error, we force a completely clean layout fallback 
+        // No ugly stacked controls, no double interfaces. Clean and professional.
+        console.log("Domain check blocked API. Initiating clean sandboxed viewport.");
+        const fallbackPlayerUrl = `https://dropfile.cc/player/tv/tt0388629/1/${ep}?audio=sub&lang=en`;
+        container.innerHTML = `
+          <iframe 
+            src="${fallbackPlayerUrl}" 
+            style="width:100%; height:100%; border:none; background: #000; border-radius: 12px;" 
+            allowfullscreen 
+            allow="autoplay; fullscreen">
+          </iframe>`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const initialEpElement = document.querySelector('.ep.active');
+      if (initialEpElement) loadEp(initialEpElement, '1');
+    });
+  </script>
+</body>
+</html>
